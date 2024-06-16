@@ -1229,6 +1229,19 @@ struct video_autoexposure_mode {
     0x02,                         /* bSourceID   */                                                                                                                                                          \
     0x00                          /* iTerminal   */                                                                                                                                                          \
 
+#define VIDEO_VC_EXTENSION_UNIT_DESCRIPTOR_INIT(bUnitID, guidExtensionCode)                 \
+    0x1a,                                       /* bLength: 24 + 1 + 1       */             \
+    VIDEO_CS_INTERFACE_DESCRIPTOR_TYPE,         /* bDescriptorType           */             \
+    VIDEO_VC_EXTENSION_UNIT_DESCRIPTOR_SUBTYPE, /* bDescriptorSubtype        */             \
+    bUnitID,                                                                                \
+    guidExtensionCode,                                                                      \
+    0x01,                                       /* bNumControls              */             \
+    0x01,                                       /* bNrInPins                 */             \
+    0x02,                                       /* baSourceID(1): PU         */             \
+    0x01,                                       /* bControlSize              */             \
+    0x01,                                       /* bmControls                */             \
+    0x00                                        /* iExtension                */
+
 #define VIDEO_VS_DESCRIPTOR_INIT(bInterfaceNumber, bAlternateSetting, bNumEndpoints)        \
     /* Video Streaming (VS) Interface Descriptor */                                         \
     0x09,                              /* bLength */                                        \

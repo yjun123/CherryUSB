@@ -6,6 +6,8 @@
 #include "usbd_core.h"
 #include "usbd_video.h"
 
+#define UNIT_TERMINAL_SIZE 4
+
 struct video_entity_info {
     uint8_t bDescriptorSubtype;
     uint8_t bEntityId;
@@ -17,7 +19,7 @@ struct usbd_video_priv {
     struct video_probe_and_commit_controls commit;
     uint8_t power_mode;
     uint8_t error_code;
-    struct video_entity_info info[3];
+    struct video_entity_info info[UNIT_TERMINAL_SIZE];
 } g_usbd_video[CONFIG_USBDEV_MAX_BUS];
 
 static int usbd_video_control_request_handler(uint8_t busid, struct usb_setup_packet *setup, uint8_t **data, uint32_t *len)
@@ -60,12 +62,18 @@ static int usbd_video_control_request_handler(uint8_t busid, struct usb_setup_pa
     return 0;
 }
 
+__WEAK int video_control_extension_unit_request_handler(uint8_t entity_id, uint8_t control_selector, 
+                                                    uint8_t bRequest,uint8_t **data, uint32_t *len)
+{
+    return 0;                             
+}
+
 static int usbd_video_control_unit_terminal_request_handler(uint8_t busid, struct usb_setup_packet *setup, uint8_t **data, uint32_t *len)
 {
     uint8_t entity_id = (uint8_t)(setup->wIndex >> 8);
     uint8_t control_selector = (uint8_t)(setup->wValue >> 8);
 
-    for (uint8_t i = 0; i < 3; i++) {
+    for (uint8_t i = 0; i < ARRAY_SIZE(g_usbd_video[busid].info); i++) {
         struct video_entity_info *entity_info = &g_usbd_video[busid].info[i];
         if (entity_info->bEntityId == entity_id) {
             switch (entity_info->bDescriptorSubtype) {
@@ -551,6 +559,7 @@ static int usbd_video_control_unit_terminal_request_handler(uint8_t busid, struc
                     }
                     break;
                 case VIDEO_VC_EXTENSION_UNIT_DESCRIPTOR_SUBTYPE:
+                    return video_control_extension_unit_request_handler(entity_id, control_selector, setup->bRequest, data, len);
                     break;
                 case VIDEO_VC_ENCODING_UNIT_DESCRIPTOR_SUBTYPE:
                     break;
@@ -756,6 +765,9 @@ struct usbd_interface *usbd_video_init_intf(uint8_t busid, struct usbd_interface
     g_usbd_video[busid].info[2].bDescriptorSubtype = VIDEO_VC_PROCESSING_UNIT_DESCRIPTOR_SUBTYPE;
     g_usbd_video[busid].info[2].bEntityId = 0x02;
     g_usbd_video[busid].info[2].wTerminalType = 0x00;
+    g_usbd_video[busid].info[3].bDescriptorSubtype = VIDEO_VC_EXTENSION_UNIT_DESCRIPTOR_SUBTYPE;
+    g_usbd_video[busid].info[3].bEntityId = 0x07;
+    g_usbd_video[busid].info[3].wTerminalType = 0x00;
 
     usbd_video_probe_and_commit_controls_init(busid, dwFrameInterval, dwMaxVideoFrameSize, dwMaxPayloadTransferSize);
     return intf;
