@@ -861,6 +861,22 @@ struct video_cs_if_vc_output_terminal_descriptor {
 
 #define VIDEO_SIZEOF_VC_OUTPUT_TERMINAL_DESC 9
 
+struct video_cs_if_vc_extension_unit_descriptor {
+    uint8_t bLength;
+    uint8_t bDescriptorType;
+    uint8_t bDescriptorSubType;
+    uint8_t bUnitID;
+    uint8_t guidExtensionCode[16];
+    uint8_t bNumControls;
+    uint8_t bNrInPins;
+    // uint8_t baSourceID[];
+    uint8_t bControlSize;
+    // uint8_t bmControls[]
+    uint8_t iExtension;
+} __PACKED;
+
+#define VIDEO_SIZEOF_VC_EXTENSION_UNIT_DESC(p, n) (24 + p + n)
+
 struct video_cs_ep_vc_ep_descriptor {
     uint8_t bLength;
     uint8_t bDescriptorType;
@@ -1361,6 +1377,15 @@ struct video_autoexposure_mode {
     0x01,                                    /* bColorPrimaries */                     \
     0x01,                                    /* bTransferCharacteristics */            \
     0x04                                     /* bMatrixCoefficients */
+
+#define VIDEO_VS_ISO_ENDPOINT_DESCRIPTOR_INIT(bEndpointAddress, wMaxPacketSize, bInterval)                          \
+    /* 1.2.2.2 Standard VideoStream Isochronous Video Data Endpoint Descriptor */                                   \
+    0x07,                         /* bLength */                                                                     \
+    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: ENDPOINT */                                                   \
+    bEndpointAddress,             /* bEndpointAddress: IN endpoint*/                                                \
+    0x01,                         /* bmAttributes: Isochronous transfer type. synchronization type. */              \
+    WBVAL(wMaxPacketSize),        /* wMaxPacketSize */                                                              \
+    bInterval                     /* bInterval: frame interval */
 
 // clang-format on
 #endif /*USB_VIDEO_H */
